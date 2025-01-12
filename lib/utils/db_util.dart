@@ -3,22 +3,73 @@ import 'package:path/path.dart' as path;
 
 class DbUtil {
 
+  // static Future<sql.Database> openDatabaseConnection() async {
+
+  //   final databasePath = await sql.getDatabasesPath();
+
+  //   final pathToDatabase = path.join(databasePath, 'places.db');
+
+  //   return sql.openDatabase(
+  //     pathToDatabase,
+  //     onCreate: (db, version) { //Se não estiver criado
+  //       return db.execute(
+  //         'CREATE TABLE places ('
+  //           'id TEXT PRIMARY KEY, '
+  //           'title TEXT, '
+  //           'image TEXT, '
+  //           'latitude REAL, '
+  //           'longitude REAL, '
+  //           'address TEXT, '
+  //           'phone TEXT, '
+  //           'email TEXT '
+  //         ')',
+  //       );
+  //     },
+  //     version: 1,
+  //   );
+  // }
   static Future<sql.Database> openDatabaseConnection() async {
+    final databasePath = await sql.getDatabasesPath();
+    final pathToDatabase = path.join(databasePath, 'places.db');
 
-  final databasePath = await sql.getDatabasesPath();
+    return sql.openDatabase(
+      pathToDatabase,
+      version: 2, // Atualize a versão do banco
+      onCreate: (db, version) {
+        return db.execute(
+          'CREATE TABLE places ('
+          'id TEXT PRIMARY KEY, '
+          'title TEXT, '
+          'image TEXT, '
+          'latitude REAL, '
+          'longitude REAL, '
+          'address TEXT, '
+          'phone TEXT, '
+          'email TEXT'
+          ')',
+        );
+      },
+      onUpgrade: (db, oldVersion, newVersion) async {
+        if (oldVersion < 2) {
+          // Remova a tabela antiga e crie novamente
+          await db.execute('DROP TABLE IF EXISTS places');
+          await db.execute(
+            'CREATE TABLE places ('
+            'id TEXT PRIMARY KEY, '
+            'title TEXT, '
+            'image TEXT, '
+            'latitude REAL, '
+            'longitude REAL, '
+            'address TEXT, '
+            'phone TEXT, '
+            'email TEXT'
+            ')',
+          );
+        }
+      },
+    );
+  }
 
-  final pathToDatabase = path.join(databasePath, 'places.db');
-
-  return sql.openDatabase(
-    pathToDatabase,
-    onCreate: (db, version) { //Se não estiver criado
-      return db.execute(
-        'CREATE TABLE places (id TEXT PRIMARY KEY, title TEXT, image TEXT)'
-      );
-    },
-    version: 1,
-  );
-}
 
   static Future<void> insert(String table, Map<String, Object> data) async {
     //return Future.value();

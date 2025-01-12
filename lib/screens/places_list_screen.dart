@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../utils/app_routes.dart';
+import 'place_detail_screen.dart';
 
 class PlacesListScreen extends StatelessWidget {
   @override
@@ -42,7 +43,15 @@ class PlacesListScreen extends StatelessWidget {
                                     places.itemByIndex(index).image),
                               ),
                               title: Text(places.itemByIndex(index).title),
-                              onTap: () {},
+                              // onTap: () {},
+                              onTap: () {
+                                Navigator.of(context).push(
+                                  MaterialPageRoute(
+                                    builder: (ctx) => PlaceDetailScreen(places.itemByIndex(index)),
+                                  ),
+                                );
+                              },
+
                             ),
                           ),
               ),

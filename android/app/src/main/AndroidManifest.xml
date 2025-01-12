@@ -6,6 +6,8 @@
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION"/>
 
     <application
         android:label="f09_recursos_nativos"
@@ -13,7 +15,7 @@
         android:icon="@mipmap/ic_launcher">
         <meta-data
                 android:name="com.google.android.geo.API_KEY"
-                android:value="AIzaSyBI8qozMQeZZ4FiAs6SBqbaxsQQUnwPdf0" />
+                android:value="AIzaSyCKUtPnx83SazE84hyETiCY9omPf3nmDEg" />
       
         <activity
             android:name=".MainActivity"
