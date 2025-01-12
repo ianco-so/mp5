@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'dart:math';
 import 'package:flutter/material.dart';
+import 'package:google_maps_flutter_platform_interface/src/types/location.dart';
 import 'package:location/location.dart';
 
 import '../utils/location_util.dart';
@@ -25,23 +26,22 @@ class PlacesModel with ChangeNotifier {
     return _items[index];
   }
 
-  void addPlace(String title, File image, String phone, String email) async {
-    final locData = await Location().getLocation();
+  void addPlace(String title, File image, String phone, String email, LatLng latLng) async {
     final address = await LocationUtil.getAddressFromCoordinates(
-      locData.latitude!,
-      locData.longitude!,
+      latLng.latitude,
+      latLng.longitude,
     );
     // Print location and address
-    print('Latitude: ${locData.latitude}');
-    print('Longitude: ${locData.longitude}');
+    print('Latitude: ${latLng.latitude}');
+    print('Longitude: ${latLng.longitude}');
     print('Address: $address');
 
     final newPlace = Place(
       id: Random().nextDouble().toString(),
       title: title,
       location: PlaceLocation(
-        latitude: locData.latitude!,
-        longitude: locData.longitude!,
+        latitude: latLng.latitude!,
+        longitude: latLng.longitude!,
         address: address,
       ),
       image: image,
@@ -73,9 +73,12 @@ class PlacesModel with ChangeNotifier {
             title: item['title'],
             image: File(item['image']),
             location: PlaceLocation(
-              latitude: 0.0,
-              longitude: 0.0,
+              latitude: item['latitude'],
+              longitude: item['longitude'],
+              address: item['address'],
             ),
+            phone: item['phone'],
+            email: item['email'],
           ),
         )
         .toList();

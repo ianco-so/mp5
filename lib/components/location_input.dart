@@ -4,49 +4,55 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 import '../screens/map_screen.dart';
 import '../utils/location_util.dart';
-
 class LocationInput extends StatefulWidget {
+  final Function onSelectLocation;
+
+  LocationInput(this.onSelectLocation);
+
   @override
   _LocationInputState createState() => _LocationInputState();
 }
 
 class _LocationInputState extends State<LocationInput> {
   String? _previewImageUrl;
+  LatLng? _selectedLocation;
 
   Future<void> _getCurrentUserLocation() async {
-    final locData =
-        await Location().getLocation(); //pega localização do usuário
-    print(locData.latitude);
-    print(locData.longitude);
-
-    //CARREGANDO NO MAPA
-
+    final locData = await Location().getLocation();
     final staticMapImageUrl = LocationUtil.generateLocationPreviewImage(
-        latitude: locData.latitude, longitude: locData.longitude);
+      latitude: locData.latitude,
+      longitude: locData.longitude,
+    );
 
     setState(() {
       _previewImageUrl = staticMapImageUrl;
+      _selectedLocation = LatLng(locData.latitude!, locData.longitude!);
     });
+
+    widget.onSelectLocation(_selectedLocation!);
   }
 
   Future<void> _selectOnMap() async {
     final LatLng selectedPosition = await Navigator.of(context).push(
       MaterialPageRoute(
-          fullscreenDialog: true, builder: ((context) => MapScreen())),
+        fullscreenDialog: true,
+        builder: (context) => MapScreen(),
+      ),
     );
 
     if (selectedPosition == null) return;
 
-    print(selectedPosition.latitude);
-    print(selectedPosition.longitude);
-
     final staticMapImageUrl = LocationUtil.generateLocationPreviewImage(
-        latitude: selectedPosition.latitude,
-        longitude: selectedPosition.longitude);
+      latitude: selectedPosition.latitude,
+      longitude: selectedPosition.longitude,
+    );
 
     setState(() {
       _previewImageUrl = staticMapImageUrl;
+      _selectedLocation = selectedPosition;
     });
+
+    widget.onSelectLocation(_selectedLocation!);
   }
 
   @override
@@ -85,7 +91,7 @@ class _LocationInputState extends State<LocationInput> {
               onPressed: _selectOnMap,
             ),
           ],
-        )
+        ),
       ],
     );
   }
