@@ -18,25 +18,38 @@ class _ImageInputState extends State<ImageInput> {
   //Capturando Imagem
   File? _storedImage;
 
-  _takePicture() async {
+  Future<void> _takePicture() async {
     final ImagePicker _picker = ImagePicker();
-    XFile imageFile = await _picker.pickImage(
+    final XFile? imageFile = await _picker.pickImage(
       source: ImageSource.camera,
       maxWidth: 600,
-    ) as XFile;
+    );
 
     if (imageFile == null) return;
 
+    _saveImage(File(imageFile.path));
+  }
+
+  Future<void> _pickFromGallery() async {
+    final ImagePicker _picker = ImagePicker();
+    final XFile? imageFile = await _picker.pickImage(
+      source: ImageSource.gallery,
+      maxWidth: 600,
+    );
+
+    if (imageFile == null) return;
+
+    _saveImage(File(imageFile.path));
+  }
+
+  Future<void> _saveImage(File image) async {
     setState(() {
-      _storedImage = File(imageFile.path);
+      _storedImage = image;
     });
 
-    //pegar pasta que posso salvar documentos
     final appDir = await syspaths.getApplicationDocumentsDirectory();
-    String fileName = path.basename(_storedImage!.path);
-    final savedImage = await _storedImage!.copy(
-      '${appDir.path}/$fileName',
-    );
+    final fileName = path.basename(image.path);
+    final savedImage = await image.copy('${appDir.path}/$fileName');
     widget.onSelectImage(savedImage);
   }
 
@@ -51,7 +64,6 @@ class _ImageInputState extends State<ImageInput> {
             border: Border.all(width: 1, color: Colors.grey),
           ),
           alignment: Alignment.center,
-          //child: Text('Nenhuma imagem!'),
           //verificar se tem imagem
           child: _storedImage != null
               ? Image.file(
@@ -63,12 +75,21 @@ class _ImageInputState extends State<ImageInput> {
         ),
         SizedBox(width: 10),
         Expanded(
-          child: TextButton.icon(
-            icon: Icon(Icons.camera),
-            label: Text('Tirar foto'),
-            onPressed: _takePicture,
+          child: Column(
+            children: [
+              TextButton.icon(
+                icon: Icon(Icons.camera),
+                label: Text('Tirar foto'),
+                onPressed: _takePicture,
+              ),
+              TextButton.icon(
+                icon: Icon(Icons.photo_library),
+                label: Text('Escolher da galeria'),
+                onPressed: _pickFromGallery,
+              ),
+            ],
           ),
-        ),        
+        ),
       ],
     );
   }
