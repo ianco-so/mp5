@@ -7,29 +7,35 @@ import '../utils/location_util.dart';
 class LocationInput extends StatefulWidget {
   final Function onSelectLocation;
 
-  LocationInput(this.onSelectLocation);
+  // LocationInput(this.onSelectLocation);
+  LocationInput(this.onSelectLocation, {Key? key}) : super(key: key); // Pass key to parent
 
   @override
-  _LocationInputState createState() => _LocationInputState();
+  LocationInputState createState() => LocationInputState();
 }
 
-class _LocationInputState extends State<LocationInput> {
+class LocationInputState extends State<LocationInput> {
+  // final locationInputKey = GlobalKey<LocationInputState>();
   String? _previewImageUrl;
   LatLng? _selectedLocation;
 
-  Future<void> _getCurrentUserLocation() async {
-    final locData = await Location().getLocation();
+  void updateMapPreview(LatLng coordinates) {
     final staticMapImageUrl = LocationUtil.generateLocationPreviewImage(
-      latitude: locData.latitude,
-      longitude: locData.longitude,
+      latitude: coordinates.latitude,
+      longitude: coordinates.longitude,
     );
 
     setState(() {
       _previewImageUrl = staticMapImageUrl;
-      _selectedLocation = LatLng(locData.latitude!, locData.longitude!);
+      _selectedLocation = coordinates;
     });
 
     widget.onSelectLocation(_selectedLocation!);
+  }
+
+  Future<void> _getCurrentUserLocation() async {
+    final locData = await Location().getLocation();
+    updateMapPreview(LatLng(locData.latitude!, locData.longitude!));
   }
 
   Future<void> _selectOnMap() async {
@@ -40,19 +46,9 @@ class _LocationInputState extends State<LocationInput> {
       ),
     );
 
-    if (selectedPosition == null) return;
-
-    final staticMapImageUrl = LocationUtil.generateLocationPreviewImage(
-      latitude: selectedPosition.latitude,
-      longitude: selectedPosition.longitude,
-    );
-
-    setState(() {
-      _previewImageUrl = staticMapImageUrl;
-      _selectedLocation = selectedPosition;
-    });
-
-    widget.onSelectLocation(_selectedLocation!);
+    if (selectedPosition != null) {
+      updateMapPreview(selectedPosition);
+    }
   }
 
   @override
@@ -60,7 +56,7 @@ class _LocationInputState extends State<LocationInput> {
     return Column(
       children: [
         Container(
-          height: 150,
+          height: 120,
           width: double.infinity,
           alignment: Alignment.center,
           decoration: BoxDecoration(

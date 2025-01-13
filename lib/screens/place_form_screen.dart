@@ -1,12 +1,14 @@
 import 'dart:io';
 
-import 'package:f09_recursos_nativos/components/image_input.dart';
-import 'package:f09_recursos_nativos/components/location_input.dart';
-import 'package:f09_recursos_nativos/provider/places_model.dart';
+import '/components/image_input.dart';
+import '/components/location_input.dart';
+import '/provider/places_model.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 // import 'package:location/location.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+
+import 'address_input_screen.dart';
 
 
 class PlaceFormScreen extends StatefulWidget {
@@ -17,6 +19,8 @@ class _PlaceFormScreenState extends State<PlaceFormScreen> {
   final _titleController = TextEditingController();
   final _phoneController = TextEditingController();
   final _emailController = TextEditingController();
+  final GlobalKey<LocationInputState> _locationInputKey = GlobalKey<LocationInputState>();
+  // final _addressController = TextEditingController();
   File? _pickedImage;
   LatLng? _pickedLocation;
 
@@ -27,6 +31,29 @@ class _PlaceFormScreenState extends State<PlaceFormScreen> {
   void _selectLocation(LatLng pickedLocation) {
     _pickedLocation = pickedLocation;
   }
+
+  void _selectAddress() async {
+    final coordinates = await Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (ctx) => AddressInputScreen(),
+      ),
+    );
+
+    print("=================================================================");
+    print(coordinates);
+    print("=================================================================");
+    if (coordinates == null) return;
+    setState(() {
+      _pickedLocation = coordinates;
+    });
+
+
+    // Atualiza o preview do mapa no LocationInput
+    // final locationInputKey = GlobalKey<_LocationInputState>();
+    // locationInputKey.currentState?.updateMapPreview(coordinates);
+     _locationInputKey.currentState?.updateMapPreview(coordinates);
+  }
+
 
   Future<void> _submitForm() async {
     if (_titleController.text.isEmpty ||
@@ -59,7 +86,19 @@ class _PlaceFormScreenState extends State<PlaceFormScreen> {
             decoration: InputDecoration(labelText: 'Título'),
           ),
           ImageInput(_selectImage),
-          LocationInput(_selectLocation),
+          // TextField(
+          //   controller: _addressController,
+          //   decoration: InputDecoration(labelText: 'Endereço'),
+          // ),
+          TextButton.icon(
+            icon: Icon(Icons.search),
+            label: Text('Inserir Endereço'),
+            onPressed: _selectAddress,
+          ),
+          LocationInput(
+            _selectLocation,
+           key: _locationInputKey ,
+          ),
           TextField(
             controller: _phoneController,
             decoration: InputDecoration(labelText: 'Telefone'),
