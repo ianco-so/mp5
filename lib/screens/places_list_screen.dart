@@ -20,41 +20,48 @@ class PlacesListScreen extends StatelessWidget {
               Navigator.of(context).pushNamed(AppRoutes.PLACE_FORM);
             },
             icon: Icon(Icons.add, color: Colors.white,),
-          )
+          ),
+          IconButton(
+          icon: Icon(Icons.sync),
+          onPressed: () async {
+            await Provider.of<PlacesModel>(context, listen: false).syncWithFirebase();
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('Sincronizado com sucesso!')),
+            );
+          },
+        ),
         ],
       ),
       body: FutureBuilder(
-        future: Provider.of<PlacesModel>(context, listen: false).loadPlaces(),
-        builder: (ctx, snapshot) => snapshot.connectionState ==
-                ConnectionState.waiting
-            ? Center(child: CircularProgressIndicator())
-            : Consumer<PlacesModel>(
-                child: Center(
-                  child: Text('Nenhum local'),
-                ),
-                builder: (context, places, child) =>
-                    places.itemsCount == 0
-                        ? child!
-                        : ListView.builder(
-                            itemCount: places.itemsCount,
-                            itemBuilder: (context, index) => ListTile(
-                              leading: CircleAvatar(
-                                backgroundImage: FileImage(
-                                    places.itemByIndex(index).image),
-                              ),
-                              title: Text(places.itemByIndex(index).title),
-                              // onTap: () {},
-                              onTap: () {
-                                Navigator.of(context).push(
-                                  MaterialPageRoute(
-                                    builder: (ctx) => PlaceDetailScreen(places.itemByIndex(index)),
-                                  ),
-                                );
-                              },
+        future: Provider.of<PlacesModel>(context, listen: false).loadRecentPlaces(),
+        builder: (ctx, snapshot) => snapshot.connectionState == ConnectionState.waiting
+          ? Center(child: CircularProgressIndicator())
+          : Consumer<PlacesModel>(
+            child: Center(
+              child: Text('Nenhum local'),
+            ),
+            builder: (context, places, child) => places.itemsCount == 0
+              ? child!
+              : ListView.builder(
+                itemCount: places.itemsCount,
+                itemBuilder: (context, index) => ListTile(
+                  leading: CircleAvatar(
+                    backgroundImage: FileImage(
+                        places.itemByIndex(index).image),
+                  ),
+                  title: Text(places.itemByIndex(index).title),
+                  // onTap: () {},
+                  onTap: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (ctx) => PlaceDetailScreen(places.itemByIndex(index)),
+                      ),
+                    );
+                  },
 
-                            ),
-                          ),
+                ),
               ),
+          ),
       ),
     );
   }

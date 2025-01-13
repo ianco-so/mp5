@@ -2,12 +2,14 @@ import 'dart:io';
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter_platform_interface/src/types/location.dart';
-import 'package:location/location.dart';
 
 import '../utils/location_util.dart';
 import '/models/place_location.dart';
 import '/models/place.dart';
 import '/utils/db_util.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+import '../utils/url_util.dart';
 
 
 class PlacesModel with ChangeNotifier {
@@ -64,7 +66,27 @@ class PlacesModel with ChangeNotifier {
   }
 
 
-  Future<void> loadPlaces() async {
+  // Future<void> loadPlaces() async {
+  //   final dataList = await DbUtil.getData('places');
+  //   _items = dataList
+  //       .map(
+  //         (item) => Place(
+  //           id: item['id'],
+  //           title: item['title'],
+  //           image: File(item['image']),
+  //           location: PlaceLocation(
+  //             latitude: item['latitude'],
+  //             longitude: item['longitude'],
+  //             address: item['address'],
+  //           ),
+  //           phone: item['phone'],
+  //           email: item['email'],
+  //         ),
+  //       )
+  //       .toList();
+  //   notifyListeners();
+  // }
+  Future<void> loadRecentPlaces() async {
     final dataList = await DbUtil.getData('places');
     _items = dataList
         .map(
@@ -82,6 +104,79 @@ class PlacesModel with ChangeNotifier {
           ),
         )
         .toList();
+
+    // Ordenar por data (considerando que o Firebase retorna 'createdAt')
+    _items.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+    _items = _items.take(10).toList();
+
     notifyListeners();
   }
+
+
+
+  Future<void> addPlaceToFirebase(Place place) async {
+    final url = Uri.parse('${UrlUtil.FIREBASE_URL}/places.json');
+    final response = await http.post(
+      url,
+      body: json.encode({
+        'title': place.title,
+        'image': place.image.path,
+        'latitude': place.location?.latitude,
+        'longitude': place.location?.longitude,
+        'address': place.location?.address,
+        'phone': place.phone,
+        'email': place.email,
+        'createdAt': DateTime.now().toIso8601String(),
+      }),
+    );
+    if (response.statusCode >= 400) {
+      throw Exception('Failed to save place on Firebase');
+    }
+  }
+
+  Future<void> syncWithFirebase() async {
+    final url = Uri.parse('${UrlUtil.FIREBASE_URL}/places.json');
+    final response = await http.get(url);
+
+    if (response.statusCode >= 400) {
+      throw Exception('Failed to fetch data from Firebase');
+    }
+
+    final data = json.decode(response.body) as Map<String, dynamic>;
+    final List<Place> firebasePlaces = [];
+
+    data.forEach((id, placeData) {
+      firebasePlaces.add(
+        Place(
+          id: id,
+          title: placeData['title'],
+          image: File(placeData['image']),
+          location: PlaceLocation(
+            latitude: placeData['latitude'],
+            longitude: placeData['longitude'],
+            address: placeData['address'],
+          ),
+          phone: placeData['phone'],
+          email: placeData['email'],
+        ),
+      );
+    });
+
+    // Atualizar SQLite
+    for (var place in firebasePlaces) {
+      DbUtil.insert('places', {
+        'id': place.id,
+        'title': place.title,
+        'image': place.image.path,
+        'latitude': place.location!.latitude,
+        'longitude': place.location!.longitude,
+        'address': place.location!.address,
+        'phone': place.phone!,
+        'email': place.email!,
+      });
+    }
+
+    notifyListeners();
+  }
+
 }

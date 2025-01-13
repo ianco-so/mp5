@@ -8,6 +8,7 @@ class Place {
   final File image;
   final String? phone;
   final String? email;
+  final DateTime createdAt = DateTime.now();
 
   Place({
     required this.id,
