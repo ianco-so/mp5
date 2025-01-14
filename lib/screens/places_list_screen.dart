@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:f09_recursos_nativos/provider/places_model.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';

@@ -2,7 +2,6 @@ import 'dart:io';
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter_platform_interface/src/types/location.dart';
-import 'package:location/location.dart';
 
 import '../utils/location_util.dart';
 import '/models/place_location.dart';
@@ -40,8 +39,8 @@ class PlacesModel with ChangeNotifier {
       id: Random().nextDouble().toString(),
       title: title,
       location: PlaceLocation(
-        latitude: latLng.latitude!,
-        longitude: latLng.longitude!,
+        latitude: latLng.latitude,
+        longitude: latLng.longitude,
         address: address,
       ),
       image: image,

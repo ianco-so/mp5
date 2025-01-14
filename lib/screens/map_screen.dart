@@ -1,10 +1,6 @@
-import 'dart:async';
-
 import 'package:f09_recursos_nativos/models/place_location.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-
-import '../models/place.dart';
 
 class MapScreen extends StatefulWidget {
   final PlaceLocation initialLocation;
